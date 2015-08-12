@@ -1,0 +1,7 @@
+Flask
+Flask-RESTful     
+Flask-HTTPAuth                    #login
+Flask-SQLAlchemy
+SQLAlchemy
+itsdangerous                      #token 
+passlib                           #hash
