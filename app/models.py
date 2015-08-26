@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime
 from passlib.apps import custom_app_context as pwd_context
@@ -8,11 +7,6 @@ from itsdangerous import (
     TimedJSONWebSignatureSerializer as
     Serializer, BadSignature, SignatureExpired)
 
-# define the database
-# app = Flask(__name__)
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/webapi?charset=utf8'
-app.config['SECRET_KEY'] = 'practice makes perfect!'
 db = SQLAlchemy()
 
 
@@ -50,13 +44,13 @@ class User(db.Model):
         return pwd_context.verify(password, self.password_hash)
 
     def generate_auth_token(self, expiration=3600 * 24 * 7):
-        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
+        s = Serializer(expires_in=expiration)
         return s.dumps({'id': self.id})
 
     # only if the token is verified, can the user know the result
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(app.config['SECRET_KEY'])
+        s = Serializer()
         try:
             data = s.loads(token)
         except SignatureExpired:
@@ -175,7 +169,7 @@ class ObservatoryData(db.Model):
     area = db.Column(db.String(100), nullable=False)
     temperature = db.Column(db.String(100), nullable=False)
     weather = db.Column(db.String(100), nullable=False)
-    uv = db.Column(db.String(100), nullable=False)  # Ultraviolet rays
+    uv = db.Column(db.String(100), nullable=False)
     humidity = db.Column(db.String(100), nullable=False)
     windspeed = db.Column(db.String(100), nullable=False)
     winddirect = db.Column(db.String(100), nullable=False)
