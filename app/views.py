@@ -497,55 +497,7 @@ class users(Resource):
         return {"status": "ok"}, 200
 
 
-# @app.route('/image/content/<filename>', methods=['GET'])
-# def portraits(filename):
-#     filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#     if not os.path.exists(filename):
-#         filename = os.path.join(app.config['UPLOAD_FOLDER'], "default.png")
-#     return send_file(filename, mimetype='image/png')
-
-
-# @app.route('/image/content', methods=['POST'])
-# def upload():
-#     file = request.files['file']
-#     userId = request.form['id']
-#     if file and allowed_file(file.filename):
-#         filename = secure_filename(file.filename)
-#         filename = userId + '.' + filename.rsplit('.', 1)[1]
-#         user = User.query.filter_by(id=userId).first_or_404()
-#         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#         user.portrait = path
-#         db.session.commit()
-#         file.save(path)
-#         url_for('portraits', filename=filename)
-#         return jsonify({"status": "ok"})
-#     return redirect('/')
-
-
-# @app.route('/')
-# def index():
-#     return '''
-#     <!doctype html>
-#     <html>
-#     <body>
-#     <form action='/image/content' method='post' enctype='multipart/form-data'>
-#     <input type='file' name='file'>
-#     <input type='submit' value='Upload'>
-#     </form>
-#     '''
-
-
-# @app.route('/v1/login', methods=['GET'])
-# @auth.login_required
-# def get_auth_token():
-#     token = g.user.generate_auth_token()
-#     id = g.user.id
-#     return jsonify({'token': token.decode('ascii'), 'id': id})
-
-
 def verify_password(username_or_token, password):
-    # first try to authenticate by token
-    # username_or_token = "sad"
     user = User.verify_auth_token(username_or_token)
     if not user:
         user = User.query.filter_by(username=username_or_token).first()
@@ -553,14 +505,3 @@ def verify_password(username_or_token, password):
             return False
     g.user = user
     return True
-
-
-# @app.after_request
-# def after_request(response):
-#     # response.headers.add('Access-Control-Allow-Origin', '*')
-#     # response.headers.add(
-#     #  'Access-Control-Allow-Headers','Content-Type,Authorization')
-#     # response.headers.add(
-#     #    'Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-#     # response.headers.add('Authorization', ''roken)
-#     return response
