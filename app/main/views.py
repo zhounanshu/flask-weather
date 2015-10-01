@@ -3,8 +3,11 @@
 from flask import request, g
 from flask.ext.restful import abort, Resource
 from flask.ext.httpauth import HTTPBasicAuth
-from models import *
 from werkzeug import secure_filename
+
+from . import main
+from .. import db
+from .. models import *
 
 auth = HTTPBasicAuth()
 
@@ -497,6 +500,44 @@ class users(Resource):
         return {"status": "ok"}, 200
 
 
+class publicDatas(Resource):
+
+    def post(self):
+        if not request.json or not request.args or ('type' not in request.args):
+            abort(404)
+        type = request.args['type']
+        if type == "ten_day_forecast":
+            for i in range(0,9):
+                data = request.json['data'][i]
+                datatime = data['datatime']
+                oldData = TenDayForecastData.query.filter_by(datatime=datatime).first()
+                if oldData is None:
+                    direction = data['direction']
+                    speed = data['speed']
+                    tempe = data['tempe']
+                    weather = data['weather']
+                    weatherpic = data['weatherpic']
+                    newData = TenDayForecastData(
+                        datatime, direction, speed,
+                        tempe, weather, weatherpic)
+                    db.session.add(newData)
+                else:
+                    oldData.direction = data['direction']
+                    oldData.speed = data['speed']
+                    oldData.tempe = data['tempe']
+                    oldData.weather = data['weather']
+                    oldData.weatherpic = data['weatherpic']
+            db.session.commit()
+            return {"status": "ok"}, 201
+        else :
+            abort(400)
+
+
+class index(Resource):
+    def get(self):
+        return {"welcome":"friend!"},200
+
+
 def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
@@ -505,3 +546,4 @@ def verify_password(username_or_token, password):
             return False
     g.user = user
     return True
+

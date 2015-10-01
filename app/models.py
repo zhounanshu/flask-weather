@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (
     TimedJSONWebSignatureSerializer as
     Serializer, BadSignature, SignatureExpired)
-
-db = SQLAlchemy()
+from . import db
 
 
 class User(db.Model):
@@ -198,3 +196,24 @@ class ObservatoryData(db.Model):
 
     def __repr__(self):
         return '<ObservatoryData %r>' % self.id
+
+#10 DAYS FORECAST DATA IN SHANGHAI
+class TenDayForecastData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    datatime = db.Column(db.DateTime, nullable=False)
+    direction = db.Column(db.String(100), nullable=False)
+    speed = db.Column(db.String(100), nullable=False)
+    tempe = db.Column(db.String(100), nullable=False)
+    weather = db.Column(db.String(100), nullable=False)
+    weatherpic = db.Column(db.String(100), nullable=False)
+
+    def __init__(
+            self, datatime, direction, speed,
+            tempe, weather, weatherpic):
+        self.datatime = datatime
+        self.direction = direction
+        self.speed = speed
+        self.tempe = tempe
+        self.weather = weather
+        self.weatherpic = weatherpic
