@@ -217,3 +217,21 @@ class TenDayForecastData(db.Model):
         self.tempe = tempe
         self.weather = weather
         self.weatherpic = weatherpic
+
+
+#City Warning
+class WarningData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    publishtime = db.Column(db.Date, nullable=False)
+    type = db.Column(db.String(100),nullable =False)
+    level = db.Column(db.String(100),nullable=False)
+    content = db.Column(db.String(100),nullable=False)
+
+    def __init__(
+            self, publishtime, type,
+            level, content):
+        self.publishtime = publishtime
+        self.type = type
+        self.level = level
+        self.content = content

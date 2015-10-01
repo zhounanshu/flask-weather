@@ -529,6 +529,16 @@ class publicDatas(Resource):
                     oldData.weatherpic = data['weatherpic']
             db.session.commit()
             return {"status": "ok"}, 201
+        elif type == "warning_city":
+            data = request.json['data'][0]
+            publishtime = data['publishtime']
+            warningtype = data['type']
+            level = data['level']
+            content = data['content']
+            newWarningData = WarningData(publishtime,warningtype,level,content)
+            db.session.add(newWarningData)
+            db.session.commit()
+            return {"status": "ok"}, 201
         else :
             abort(400)
 
