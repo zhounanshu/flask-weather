@@ -535,17 +535,27 @@ class publicDatas(Resource):
             warningtype = data['type']
             level = data['level']
             content = data['content']
-            newWarningData = WarningData(publishtime,warningtype,level,content)
+            newWarningData = WarningData(
+                publishtime,warningtype,level,content)
             db.session.add(newWarningData)
+            db.session.commit()
+            return {"status": "ok"}, 201
+        elif type == "real_aqi":
+            datetime = request.json['datetime']
+            aqi = request.json['aqi'] 
+            level = request.json['level']
+            pripoll = request.json['pripoll']
+            content = request.json['content']
+            measure = request.json['measure']
+            print 2
+            newAQIData = AQIData(
+                datetime, aqi, level,
+                pripoll, content, measure)
+            db.session.add(newAQIData)
             db.session.commit()
             return {"status": "ok"}, 201
         else :
             abort(400)
-
-
-class index(Resource):
-    def get(self):
-        return {"welcome":"friend!"},200
 
 
 def verify_password(username_or_token, password):

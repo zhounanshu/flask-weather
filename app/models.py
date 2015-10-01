@@ -235,3 +235,23 @@ class WarningData(db.Model):
         self.type = type
         self.level = level
         self.content = content
+
+class AQIData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # metero api gives '2015年10月01日 11时' etc 
+    datetime = db.Column(db.String(100), nullable=False)
+    aqi = db.Column(db.Integer,nullable =False)
+    level = db.Column(db.String(100),nullable=False)
+    pripoll = db.Column(db.String(100),nullable=False)
+    content = db.Column(db.String(100),nullable=False)
+    measure = db.Column(db.String(100),nullable=False)
+
+    def __init__(
+            self, datetime, aqi, level,
+            pripoll, content, measure):
+        self.datetime = datetime
+        self.aqi = aqi 
+        self.level = level
+        self.pripoll = pripoll
+        self.content = content
+        self.measure = measure
