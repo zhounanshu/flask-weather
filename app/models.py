@@ -218,8 +218,6 @@ class TenDayForecastData(db.Model):
         self.weather = weather
         self.weatherpic = weatherpic
 
-
-#City Warning
 class WarningData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
@@ -255,3 +253,34 @@ class AQIData(db.Model):
         self.pripoll = pripoll
         self.content = content
         self.measure = measure
+
+class StationData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    datetime = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    sitenumber = db.Column(db.String(100), nullable=False)
+    tempe = db.Column(db.String(100), nullable=False)
+    rain = db.Column(db.String(100), nullable=False)
+    wind_direction = db.Column(db.String(100), nullable=False)
+    wind_speed = db.Column(db.String(100), nullable=False)
+    visibility = db.Column(db.String(100), nullable=False)
+    humi = db.Column(db.String(100), nullable=False)
+    pressure = db.Column(db.String(100), nullable=False)
+    
+    def __init__(
+            self, datetime, name, sitenumber,
+            tempe, rain, wind_direction,wind_speed,
+            visibility,humi,pressure):
+        self.datetime = datetime
+        self.name = name
+        self.sitenumber = sitenumber
+        self.tempe = tempe
+        self.rain = rain
+        self.wind_direction = wind_direction
+        self.wind_speed = wind_speed
+        self.visibility = visibility
+        self.humi = humi
+        self.pressure = pressure
+
+

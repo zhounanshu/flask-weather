@@ -554,6 +554,27 @@ class publicDatas(Resource):
             db.session.add(newAQIData)
             db.session.commit()
             return {"status": "ok"}, 201
+        elif type == "sh_station":
+            datalist = request.json['data']
+            for i in range(0,len(datalist)):
+                data = datalist[i]
+                datetime = data['datetime']
+                name = data['name']
+                sitenumber = data['sitenumber']
+                tempe = data['tempe']
+                rain = data['rain']
+                wind_direction = data['wind_direction']
+                wind_speed = data['wind_speed']
+                visibility = data['visibility']
+                humi = data['humi']
+                pressure = data['pressure']
+                newStationData = StationData(
+                    datetime, name, sitenumber,
+                    tempe, rain, wind_direction,wind_speed,
+                    visibility,humi,pressure)
+                db.session.add(newStationData)
+            db.session.commit()
+            return {"status": "ok"}, 201
         else :
             abort(400)
 
