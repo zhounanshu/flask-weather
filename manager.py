@@ -1,11 +1,13 @@
 #!usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-j
+import os
 from app import *
 from flask.ext.script import Manager, Shell
-from instance.config import *
+#from instance.config import *
 
-cnf = ProducionConfig
-app = create_app(cnf)
+app = create_app(os.getenv('FLASK_CONFIG') or 'production')
+db.drop_all(app=app)
+db.create_all(app=app)
 manager = Manager(app)
 
 

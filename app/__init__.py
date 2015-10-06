@@ -1,24 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from flask import Flask
-from flask.ext.restful import Api
-from views import *
+from flask.ext.sqlalchemy import SQLAlchemy
+from config import config
 
+db = SQLAlchemy()
 
-def create_app(cnf):
+def create_app(config_name):
     app = Flask(__name__)
-    app.config.from_object(cnf)
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
+    
     db.init_app(app)
-    api = Api(app)
-    api.add_resource(shareDatas, '/v1/sharedata')
-    api.add_resource(deviceDatas, '/v1/devicedata')
-    api.add_resource(realtimeDatas, '/v1/devicedata/realtime')
-    api.add_resource(devices, '/v1/device')
-    api.add_resource(device, '/v1/device/<id>')
-    api.add_resource(users, '/v1/user')
-    api.add_resource(user, '/v1/user/<id>')
-    api.add_resource(friends, '/v1/friend')
-    api.add_resource(friend, '/v1/friend/<id>')
-    api.add_resource(ObDatas, '/v1/weather')
+
+    #register the blueprint
+    from .main import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
     return app
