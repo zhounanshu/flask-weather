@@ -7,7 +7,6 @@ from itsdangerous import (
     Serializer, BadSignature, SignatureExpired)
 from . import db
 
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
@@ -42,13 +41,13 @@ class User(db.Model):
         return pwd_context.verify(password, self.password_hash)
 
     def generate_auth_token(self, expiration=3600 * 24 * 7):
-        s = Serializer(expires_in=expiration)
+        s = Serializer('SECRET_KEY', expires_in=expiration)
         return s.dumps({'id': self.id})
 
     # only if the token is verified, can the user know the result
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer()
+        s = Serializer('SECRET_KEY')
         try:
             data = s.loads(token)
         except SignatureExpired:

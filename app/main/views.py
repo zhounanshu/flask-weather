@@ -1,24 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import request, g
+from flask import request, g ,jsonify
 from flask.ext.restful import abort, Resource
 from flask.ext.httpauth import HTTPBasicAuth
-from werkzeug import secure_filename
 
 from . import main
 from .. import db
 from .. models import *
 
 auth = HTTPBasicAuth()
-
-# upload settings
-ALLOWED_EXTENSIONS = set(['png'])
-
-
-# verify the file type
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
 
 # type change
 def deviceDataToJson(value):
@@ -432,7 +422,7 @@ class devices(Resource):
 
 
 class user(Resource):
-
+    @auth.login_required
     def get(self, id):
         user = User.query.filter_by(id=id).first_or_404()
         return {"User": userToJson(user)}, 200
@@ -579,6 +569,22 @@ class publicDatas(Resource):
             abort(400)
 
 
+
+@main.route('/v1/token', methods=['GET'])
+@auth.login_required
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({ 'token': token.decode('ascii') })
+
+@main.route('/v1/login', methods=['GET'])
+@auth.login_required
+def login():
+    id = g.user.id
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii'), 'id': id, "location": "http//127.0.0.1:5000/image/content"})
+
+
+@auth.verify_password
 def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
@@ -587,4 +593,3 @@ def verify_password(username_or_token, password):
             return False
     g.user = user
     return True
-
