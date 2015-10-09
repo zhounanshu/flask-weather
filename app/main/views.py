@@ -4,7 +4,7 @@ from flask import request, g ,jsonify
 from flask.ext.restful import abort, Resource
 from flask.ext.httpauth import HTTPBasicAuth
 
-import datetime
+import datetime,urllib2
 from randomData import *
 from . import main
 from .. import db
@@ -570,6 +570,12 @@ class publicDatas(Resource):
             abort(400)
 
 
+@main.route('/v1/weather/alarm',methods=['GET'])
+def get_alarm():
+    url = 'http://61.152.122.112:8080/publicdata/data?appid=bFLKk0uV7IZvzcBoWJ1j&appkey=mXwnhDkYIG6S9iOyqsAW7vPVQ5ZxBe&type=warning_city'
+    response = urllib2.urlopen(url)
+    content = response.read()[1:-1]#remove the [] in string
+    return jsonify({"data": content})
 
 @main.route('/v1/token', methods=['GET'])
 @auth.login_required
@@ -600,7 +606,6 @@ def initData():
     db.drop_all()
     db.create_all()
     
-
     people = []
     username = randomUsername(50)
     password = randomPassword(50)
@@ -657,8 +662,6 @@ def initData():
     db.session.add(y)
     db.session.commit()
 
-
-#add
     for i in range(0,50):
         db.session.add(people[i])
         db.session.commit()
