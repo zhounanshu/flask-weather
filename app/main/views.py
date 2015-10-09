@@ -52,7 +52,7 @@ def ObservatoryDataToJson(value):
         dic['date'] = value[i].date.strftime("%Y-%m-%d")
         dic['temperature'] = value[i].temperature
         dic['weather'] = value[i].weather
-        dic['uv'] = value[i].uv
+        dic['aqi'] = value[i].aqi
         dic['humidity'] = value[i].humidity
         dic['windspeed'] = value[i].windspeed
         dic['winddirect'] = value[i].winddirect
@@ -634,11 +634,12 @@ def initData():
     for i in range(50,1000):
         x= random.randint(0,49)
         data.append(DeviceData(date[i],longitude[i],latitude[i],temperature[i],humidity[i],uv[i],pressure[i],people[x],device[x]))
+    
     obData = []
     area = randomArea(1000)
     temperature = randomValue(1000,0,40)
     weather = randomWether(1000)
-    uv = randomValue(1000,0,500)
+    aqi = randomValue(1000,0,500)
     humidity = randomValue(1000,0,500)
     windspeed = randomValue(1000,0,500)
     winddirect = randomValue(1000,0,500)
@@ -647,7 +648,7 @@ def initData():
 
     print "start commit"
     for i in range(0,1000):
-        obData.append(ObservatoryData(area[i],temperature[i],weather[i],uv[i],humidity[i],windspeed[i],winddirect[i],pressure[i],sunrise[i],sunset[i],uploadTime[i]))
+        obData.append(ObservatoryData(area[i],temperature[i],weather[i],aqi[i],humidity[i],windspeed[i],winddirect[i],pressure[i],sunrise[i],sunset[i],uploadTime[i]))
 
 
     x=Friendships(1,2)

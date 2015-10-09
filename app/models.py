@@ -166,7 +166,7 @@ class ObservatoryData(db.Model):
     area = db.Column(db.String(100), nullable=False)
     temperature = db.Column(db.String(100), nullable=False)
     weather = db.Column(db.String(100), nullable=False)
-    uv = db.Column(db.String(100), nullable=False)
+    aqi = db.Column(db.String(100), nullable=False)
     humidity = db.Column(db.String(100), nullable=False)
     windspeed = db.Column(db.String(100), nullable=False)
     winddirect = db.Column(db.String(100), nullable=False)
@@ -176,13 +176,13 @@ class ObservatoryData(db.Model):
     date = db.Column(db.Date)
 
     def __init__(
-            self, area, temperature, weather, uv,
+            self, area, temperature, weather, aqi,
             humidity, windspeed, winddirect, pressure,
             sunrise, sunset, date):
         self.area = area
         self.temperature = temperature
         self.weather = weather
-        self.uv = uv
+        self.aqi = aqi
         self.humidity = humidity
         self.windspeed = windspeed
         self.winddirect = winddirect
