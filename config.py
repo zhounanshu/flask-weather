@@ -23,6 +23,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
+    DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/flask_weather_product?charset=utf8'
 
 
