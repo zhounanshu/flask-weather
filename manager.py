@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-j
 import os
 from app import *
-from flask.ext.script import Manager, Shell
+from flask.ext.script import Manager, Shell, Server
 #from instance.config import *
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'production')
@@ -17,7 +17,7 @@ def make_shell_context():
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))
-
+manager.add_command("runserver",Server(host="0.0.0.0",port=5000))
 
 @manager.command
 def deploy():
