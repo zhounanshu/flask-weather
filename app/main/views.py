@@ -1,24 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import request, g
+from flask import request, g ,jsonify
 from flask.ext.restful import abort, Resource
 from flask.ext.httpauth import HTTPBasicAuth
-from werkzeug import secure_filename
 
+import datetime,urllib2
+from randomData import *
 from . import main
 from .. import db
 from .. models import *
 
 auth = HTTPBasicAuth()
-
-# upload settings
-ALLOWED_EXTENSIONS = set(['png'])
-
-
-# verify the file type
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
 
 # type change
 def deviceDataToJson(value):
@@ -60,7 +52,7 @@ def ObservatoryDataToJson(value):
         dic['date'] = value[i].date.strftime("%Y-%m-%d")
         dic['temperature'] = value[i].temperature
         dic['weather'] = value[i].weather
-        dic['uv'] = value[i].uv
+        dic['aqi'] = value[i].aqi
         dic['humidity'] = value[i].humidity
         dic['windspeed'] = value[i].windspeed
         dic['winddirect'] = value[i].winddirect
@@ -251,7 +243,7 @@ class deviceDatas(Resource):
         if case == 0:
             abort(400)
 
-        if case == 3:
+        elif case == 3:
             # fetch friend's data atmost 1h earlier
             id = request.args['id']
             currentTime = datetime.datetime.now()
@@ -268,7 +260,7 @@ class deviceDatas(Resource):
                 abort(404)
             return {'devicedata': deviceDataToJson(ulist)}, 200
 
-        if case == 5:
+        elif case == 5:
             id = request.args['id']
             currentTime = datetime.datetime.now()
             priorTime = (currentTime + datetime.timedelta(days=1)).date() - datetime.timedelta(days=7)
@@ -284,7 +276,7 @@ class deviceDatas(Resource):
             return {"devicedata": getAverageUV7days(
                 ulist, priorTime, currentTime.date())}
 
-        if case == 6:
+        elif case == 6:
             id = request.args['id']
             currentTime = datetime.datetime.now()
             priorTime = currentTime - datetime.timedelta(days=1)
@@ -313,7 +305,7 @@ class deviceDatas(Resource):
                 macId=json['macId']).first_or_404()
             new_data = DeviceData(
                 time=json['time'],
-                ongitude=json['longitude'],
+                longitude=json['longitude'],
                 latitude=json['latitude'],
                 temperature=json['temperature'],
                 humidity=json['humidity'],
@@ -432,7 +424,6 @@ class devices(Resource):
 
 
 class user(Resource):
-
     def get(self, id):
         user = User.query.filter_by(id=id).first_or_404()
         return {"User": userToJson(user)}, 200
@@ -579,6 +570,28 @@ class publicDatas(Resource):
             abort(400)
 
 
+@main.route('/v1/weather/alarm',methods=['GET'])
+def get_alarm():
+    url = 'http://61.152.122.112:8080/publicdata/data?appid=bFLKk0uV7IZvzcBoWJ1j&appkey=mXwnhDkYIG6S9iOyqsAW7vPVQ5ZxBe&type=warning_city'
+    response = urllib2.urlopen(url)
+    content = response.read()[1:-1]#remove the [] in string
+    return jsonify({"data": content})
+
+@main.route('/v1/token', methods=['GET'])
+@auth.login_required
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({ 'token': token.decode('ascii') })
+
+@main.route('/v1/login', methods=['GET'])
+@auth.login_required
+def login():
+    id = g.user.id
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii'), 'id': id})
+
+
+@auth.verify_password
 def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
@@ -588,3 +601,81 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
+@main.route('/v1/initData', methods=['GET'])
+def initData():
+    db.drop_all()
+    db.create_all()
+    
+    people = []
+    username = randomUsername(50)
+    password = randomPassword(50)
+    email = randomEmail(50)
+    name = randomUsername(50)
+    birthday = randomBirthday(50)
+    area = randomAreaTrue(50)
+    sex = randomSex(50)
+    for i in range(0,50):
+        people.append(User(username[i],password[i],email[i],name[i],birthday[i],"Shanghai",area[i],sex[i]))
+
+    
+    device = []
+    macId = randomMacID(100)
+    for i in range(0,50):
+        device.append(Device(macId[i],people[i]))
+    for i in range(50,100):
+        device.append(Device(macId[i],people[random.randint(0,49)]))
+
+    data = []
+    date = randomDate(1000)
+    longitude = randomValue(1000,0,0.01)
+    latitude = randomValue(1000,0,0.01)
+    temperature = randomValue(1000,0,40)
+    humidity = randomValue(1000,0,40)
+    uv = randomValue(1000,0,500)
+    pressure = randomValue(1000,0,500)
+
+    for i in range(0,50):
+        data.append(DeviceData(date[i],longitude[i],latitude[i],temperature[i],humidity[i],uv[i],pressure[i],people[i],device[i]))
+    for i in range(50,1000):
+        x= random.randint(0,49)
+        data.append(DeviceData(date[i],longitude[i],latitude[i],temperature[i],humidity[i],uv[i],pressure[i],people[x],device[x]))
+    
+    obData = []
+    area = randomArea(1000)
+    temperature = randomValue(1000,0,40)
+    weather = randomWether(1000)
+    aqi = randomValue(1000,0,500)
+    humidity = randomValue(1000,0,500)
+    windspeed = randomValue(1000,0,500)
+    winddirect = randomValue(1000,0,500)
+    pressure = randomValue(1000,0,500)
+    sunrise,sunset,uploadTime = randomSunTime(1000)
+
+    print "start commit"
+    for i in range(0,1000):
+        obData.append(ObservatoryData(area[i],temperature[i],weather[i],aqi[i],humidity[i],windspeed[i],winddirect[i],pressure[i],sunrise[i],sunset[i],uploadTime[i]))
+
+
+    x=Friendships(1,2)
+    y=Friendships(1,3)
+    db.session.add(x)
+    db.session.add(y)
+    db.session.commit()
+
+    for i in range(0,50):
+        db.session.add(people[i])
+        db.session.commit()
+
+    for i in range(0,100):
+        db.session.add(device[i])
+        db.session.commit()
+
+    for i in range(0,1000):
+        db.session.add(data[i])
+        db.session.commit()
+
+    for i in range(0,1000):
+        db.session.add(obData[i])
+        db.session.commit()
+
+    return jsonify({ 'status': 'ok' })

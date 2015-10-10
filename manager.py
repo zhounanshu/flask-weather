@@ -6,8 +6,9 @@ from flask.ext.script import Manager, Shell
 #from instance.config import *
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'production')
-db.drop_all(app=app)
-db.create_all(app=app)
+#db.drop_all(app=app)
+#db.create_all(app=app)
+
 manager = Manager(app)
 
 
