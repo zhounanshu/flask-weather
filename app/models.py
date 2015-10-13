@@ -7,6 +7,7 @@ from itsdangerous import (
     Serializer, BadSignature, SignatureExpired)
 from . import db
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
@@ -196,16 +197,18 @@ class ObservatoryData(db.Model):
     def __repr__(self):
         return '<ObservatoryData %r>' % self.id
 
-#10 DAYS FORECAST DATA IN SHANGHAI
+# 10 DAYS FORECAST DATA IN SHANGHAI
+
+
 class TenDayForecastData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
-    datatime = db.Column(db.DateTime, nullable=False)
-    direction = db.Column(db.String(100), nullable=False)
-    speed = db.Column(db.String(100), nullable=False)
-    tempe = db.Column(db.String(100), nullable=False)
-    weather = db.Column(db.String(100), nullable=False)
-    weatherpic = db.Column(db.String(100), nullable=False)
+    datatime = db.Column(db.DateTime, nullable=True)
+    direction = db.Column(db.String(100), nullable=True)
+    speed = db.Column(db.String(100), nullable=True)
+    tempe = db.Column(db.String(100), nullable=True)
+    weather = db.Column(db.String(100), nullable=True)
+    weatherpic = db.Column(db.String(100), nullable=True)
 
     def __init__(
             self, datatime, direction, speed,
@@ -217,13 +220,14 @@ class TenDayForecastData(db.Model):
         self.weather = weather
         self.weatherpic = weatherpic
 
+
 class WarningData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
-    publishtime = db.Column(db.Date, nullable=False)
-    type = db.Column(db.String(100),nullable =False)
-    level = db.Column(db.String(100),nullable=False)
-    content = db.Column(db.String(100),nullable=False)
+    publishtime = db.Column(db.Date, nullable=True)
+    type = db.Column(db.String(100), nullable=True)
+    level = db.Column(db.String(100), nullable=True)
+    content = db.Column(db.String(100), nullable=True)
 
     def __init__(
             self, publishtime, type,
@@ -233,25 +237,27 @@ class WarningData(db.Model):
         self.level = level
         self.content = content
 
+
 class AQIData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # metero api gives '2015年10月01日 11时' etc 
-    datetime = db.Column(db.String(100), nullable=False)
-    aqi = db.Column(db.Integer,nullable =False)
-    level = db.Column(db.String(100),nullable=False)
-    pripoll = db.Column(db.String(100),nullable=False)
-    content = db.Column(db.String(100),nullable=False)
-    measure = db.Column(db.String(100),nullable=False)
+    # metero api gives '2015年10月01日 11时' etc
+    datetime = db.Column(db.String(100), nullable=True)
+    aqi = db.Column(db.Integer, nullable=True)
+    level = db.Column(db.String(100), nullable=True)
+    pripoll = db.Column(db.String(100), nullable=True)
+    content = db.Column(db.String(100), nullable=True)
+    measure = db.Column(db.String(100), nullable=True)
 
     def __init__(
             self, datetime, aqi, level,
             pripoll, content, measure):
         self.datetime = datetime
-        self.aqi = aqi 
+        self.aqi = aqi
         self.level = level
         self.pripoll = pripoll
         self.content = content
         self.measure = measure
+
 
 class StationData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -266,11 +272,11 @@ class StationData(db.Model):
     visibility = db.Column(db.String(100), nullable=False)
     humi = db.Column(db.String(100), nullable=False)
     pressure = db.Column(db.String(100), nullable=False)
-    
+
     def __init__(
             self, datetime, name, sitenumber,
-            tempe, rain, wind_direction,wind_speed,
-            visibility,humi,pressure):
+            tempe, rain, wind_direction, wind_speed,
+            visibility, humi, pressure):
         self.datetime = datetime
         self.name = name
         self.sitenumber = sitenumber
@@ -281,5 +287,3 @@ class StationData(db.Model):
         self.visibility = visibility
         self.humi = humi
         self.pressure = pressure
-
-

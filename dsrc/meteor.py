@@ -6,6 +6,7 @@ from config import loadConfig
 from util import init_logging
 import json
 import sys
+import MySQLdb
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -16,7 +17,6 @@ class Meteor(object):
         init_logging()
         cnf = loadConfig()
         self.host = cnf.getHost()
-        print self.host
         self.port = cnf.getPort()
         con = ''
         if kwargs:
@@ -42,40 +42,70 @@ class Meteor(object):
     def getResult(self):
         return self.result
 
-
 uri = "/publicdata/data?appid=bFLKk0uV7IZvzcBoWJ1j&appkey=\
 mXwnhDkYIG6S9iOyqsAW7vPVQ5ZxBe"
 
+# connect database
 
-tenDay = Meteor(uri=uri, type='ten_day_forecast').getResult()
-print tenDay[0]
-# for value in tenDay:
-#     # to do
-#     # post data
-#     pass
 
+def storeData(table, value):
+    db_init = loadConfig()
+    try:
+        conn = MySQLdb.connect(host=db_init.db_host, charset='utf8',
+                               user=db_init.db_user, passwd=db_init.db_passwd,
+                               port=db_init.db_port, db=db_init.db)
+        cur = conn.cursor()
+        fields = '('
+        s_fields = '('
+        temp = []
+        count = 0
+        for key in value.keys():
+            count += 1
+            fields += key
+            s_fields += '%s'
+            if count == len(value):
+                fields += ') values'
+                s_fields += ')'
+            else:
+                fields += ','
+                s_fields += ','
+            temp.append(value[key])
+        sql = 'insert into ' + table
+        sql += fields
+        sql += s_fields
+        cur.execute(sql, temp)
+        conn.commit()
+        cur.close()
+        conn.close()
+    except:
+        logging.debug("insert data failed......")
+
+
+# store weather information for ten days
+for_tenDay = Meteor(uri=uri, type='ten_day_forecast').getResult()
+for forecast in for_tenDay:
+    storeData("ten_day_forecast_data", forecast)
+
+# store warnigs
 warning = Meteor(uri=uri, type='warning_city').getResult()
-print warning
-# for value in warnings:
-#     # to do
-#     # post data
+# to do
+# post data
 #     pass
 
+# store aqi information
 aqi = Meteor(uri=uri, type='real_aqi').getResult()
-print aqi
+storeData('aqi_data', aqi)
 
-station = Meteor(uri=uri, type='sh_station').getResult()
-print station[0]
-# for value in station:
-#     # to do
-#     # post data
-#     pass
+# store weather station information
+stations = Meteor(uri=uri, type='sh_station').getResult()
+for station in stations:
+    storeData('station_data', station)
 
 near_station = Meteor(
     uri=uri, type="autostation", jd='121.3213', wd='31.23444').getResult()
-print near_station
+# print near_station
 # print near_station[0]
 # for value in near_station:
-#     # to do
-#     # post data
+# to do
+# post data
 #     pass

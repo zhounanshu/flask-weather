@@ -17,6 +17,11 @@ class loadConfig(object):
         if configInfor is not None:
             self.host = configInfor['host']
             self.port = configInfor['port']
+            self.db_host = configInfor['db_host']
+            self.db_port = configInfor['db_port']
+            self.db_user = configInfor['db_user']
+            self.db_passwd = configInfor['db_passwd']
+            self.db = configInfor['db']
         else:
             logging.debug("load config failed.....")
 
@@ -26,4 +31,14 @@ class loadConfig(object):
     def getPort(self):
         return self.port
 
-cnf = loadConfig()
+    def get_dbHost(self):
+        return self.db_host
+
+    def get_dbPort(self):
+        return self.db_port
+
+    def get_dbUser(self):
+        return self.db_user
+
+    def get_dbPasswd(self):
+        return self.db_passwd
