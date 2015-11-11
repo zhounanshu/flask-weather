@@ -6,3 +6,5 @@ itsdangerous                      #token
 passlib                           #hash
 MySQL-python
 Flask-Script
+uwsgi
+flask-cors
