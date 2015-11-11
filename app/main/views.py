@@ -451,9 +451,8 @@ class users(Resource):
             db.session.commit()
             userId = newUser.id
             return {
-                "status": "ok", "userId": userId,
-                "location": "http//127.0.0.1:5000/image/content"
-                    }, 201
+                "status": "ok",
+                "userId": userId}, 201
         else:
             return {"status": "failed",
                     "message": "Failed already has this username"}, 403
