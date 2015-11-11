@@ -533,7 +533,7 @@ class publicDatas(Resource):
             return {"status": "ok"}, 201
         elif type == "real_aqi":
             datetime = request.json['datetime']
-            aqi = request.json['aqi'] 
+            aqi = request.json['aqi']
             level = request.json['level']
             pripoll = request.json['pripoll']
             content = request.json['content']
@@ -605,7 +605,7 @@ def verify_password(username_or_token, password):
 def initData():
     db.drop_all()
     db.create_all()
-    
+
     people = []
     username = randomUsername(50)
     password = randomPassword(50)
@@ -617,7 +617,7 @@ def initData():
     for i in range(0,50):
         people.append(User(username[i],password[i],email[i],name[i],birthday[i],"Shanghai",area[i],sex[i]))
 
-    
+
     device = []
     macId = randomMacID(100)
     for i in range(0,50):
@@ -639,7 +639,7 @@ def initData():
     for i in range(50,1000):
         x= random.randint(0,49)
         data.append(DeviceData(date[i],longitude[i],latitude[i],temperature[i],humidity[i],uv[i],pressure[i],people[x],device[x]))
-    
+
     obData = []
     area = randomArea(1000)
     temperature = randomValue(1000,0,40)

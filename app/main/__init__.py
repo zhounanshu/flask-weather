@@ -3,7 +3,7 @@
 from flask import Blueprint
 from flask.ext.restful import Api
 
-main = Blueprint('main',__name__)
+main = Blueprint('main', __name__)
 api = Api(main)
 
 from .views import *
