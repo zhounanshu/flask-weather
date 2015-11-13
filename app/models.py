@@ -11,7 +11,6 @@ from . import db
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(500), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -25,7 +24,6 @@ class User(db.Model):
             self, username, password, email, name,
             birthday, province, district, sex, portrait=None):
         self.username = username
-        self.password = password
         self.email = email
         self.name = name
         self.birthday = birthday
@@ -41,7 +39,7 @@ class User(db.Model):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=3600 * 24 * 7):
+    def generate_auth_token(self, expiration=60):
         s = Serializer('SECRET_KEY', expires_in=expiration)
         return s.dumps({'id': self.id})
 
@@ -172,14 +170,11 @@ class ObservatoryData(db.Model):
     windspeed = db.Column(db.String(100), nullable=False)
     winddirect = db.Column(db.String(100), nullable=False)
     pressure = db.Column(db.String(100), nullable=False)
-    sunrise = db.Column(db.DateTime, nullable=False)
-    sunset = db.Column(db.DateTime, nullable=False)
     date = db.Column(db.Date)
 
     def __init__(
             self, area, temperature, weather, aqi,
-            humidity, windspeed, winddirect, pressure,
-            sunrise, sunset, date):
+            humidity, windspeed, winddirect, pressure, date):
         self.area = area
         self.temperature = temperature
         self.weather = weather
@@ -188,8 +183,6 @@ class ObservatoryData(db.Model):
         self.windspeed = windspeed
         self.winddirect = winddirect
         self.pressure = pressure
-        self.sunrise = sunrise
-        self.sunset = sunset
         if date is None:
             date = datetime.now().date()
         self.date = date

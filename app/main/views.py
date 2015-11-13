@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from flask import request, g ,jsonify
-from flask.ext.restful import abort, Resource
+from flask.ext.restful import abort, Resource, reqparse
 from flask.ext.httpauth import HTTPBasicAuth
+
 
 import datetime,urllib2
 from randomData import *
@@ -12,55 +13,20 @@ from .. models import *
 
 auth = HTTPBasicAuth()
 
-# type change
-def deviceDataToJson(value):
-    list = []
-    for i in range(0, len(value)):
-        dic = {}
-        dic['time'] = value[i].time.strftime("%Y-%m-%d %H:%M:%S")
-        dic['longitude'] = value[i].longitude
-        dic['latitude'] = value[i].latitude
-        dic['temperature'] = value[i].temperature
-        dic['humidity'] = value[i].humidity
-        dic['uv'] = value[i].uv
-        dic['pressure'] = value[i].pressure
-        list.append(dic)
-    return list
+
+def to_json(model):
+    """ Returns a JSON representation of an SQLAlchemy-backed object. """
+    json = {}
+    for col in model._sa_class_manager.mapper.mapped_table.columns:
+        json[col.name] = getattr(model, col.name)
+    return json
 
 
-def userToJson(value):
-    dic = {}
-    dic['username'] = value.username
-    dic['email'] = value.email
-    dic['birthday'] = value.birthday
-    if value.sex is True:
-        dic['sex'] = "1"
-    else:
-        dic['sex'] = '0'
-    dic['district'] = value.district
-    dic['province'] = value.province
-    dic['name'] = value.name
-    dic['photo'] = value.portrait
-    return dic
-
-
-def ObservatoryDataToJson(value):
-    list = []
-    for i in range(0, len(value)):
-        dic = {}
-        dic['area'] = value[i].area
-        dic['date'] = value[i].date.strftime("%Y-%m-%d")
-        dic['temperature'] = value[i].temperature
-        dic['weather'] = value[i].weather
-        dic['aqi'] = value[i].aqi
-        dic['humidity'] = value[i].humidity
-        dic['windspeed'] = value[i].windspeed
-        dic['winddirect'] = value[i].winddirect
-        dic['pressure'] = value[i].pressure
-        dic['sunrise'] = value[i].sunrise.time().strftime("%H:%M")
-        dic['sunset'] = value[i].sunset.time().strftime("%H:%M")
-        list.append(dic)
-    return list
+def to_json_list(model_list):
+    json_list = []
+    for model in model_list:
+        json_list.append(to_json(model))
+    return json_list
 
 
 def pickLastPost(list):
@@ -155,7 +121,6 @@ class ObDatas(Resource):
     def get(self):
         if not request.args or ('area' not in request.args) or ('date' not in request.args) or ('days' not in request.args):
             abort(404)
-
         area = request.args['area']
         date = request.args['date']
         days = string.atoi(request.args['days'])
@@ -168,10 +133,10 @@ class ObDatas(Resource):
             ObservatoryData.area == area).all()
         list = []
         if len(ulist) == 0:
-            abort(404)
+            return {'data': []}
         for i in range(0, days):
             list.append(ulist[i])
-        return {'ObservatoryData': ObservatoryDataToJson(list)}
+        return {'data': to_json_list(list)}, 200
 
 
 class realtimeDatas(Resource):
@@ -186,8 +151,8 @@ class realtimeDatas(Resource):
             DeviceData.time <= currentTimeStr).order_by(DeviceData.time).all()
         ulist = pickLastPost(ulist)
         if len(ulist) == 0:
-            abort(404)
-        return {'devicedata': deviceDataToJson(ulist)}
+            return {"data": []}
+        return {"data": to_json_list(ulist)}, 200
 
 
 class shareDatas(Resource):
@@ -221,7 +186,7 @@ class shareDatas(Resource):
                 uv=uv, pressure=pressure)
             db.session.add(new_data)
             db.session.commit()
-            return {'devicedata': json}, 201
+            return {'data': json}, 201
 
 
 class deviceDatas(Resource):
@@ -257,8 +222,8 @@ class deviceDatas(Resource):
             ).order_by(DeviceData.time).all()
             ulist = pickLastPost(ulist)
             if len(ulist) == 0:
-                abort(404)
-            return {'devicedata': deviceDataToJson(ulist)}, 200
+                return{'data': []}
+            return {'data': to_json_list(ulist)}, 200
 
         elif case == 5:
             id = request.args['id']
@@ -273,7 +238,7 @@ class deviceDatas(Resource):
             ).order_by(DeviceData.time).all()
             # if len(ulist) == 0:
             #   abort(404)
-            return {"devicedata": getAverageUV7days(
+            return {"data": getAverageUV7days(
                 ulist, priorTime, currentTime.date())}
 
         elif case == 6:
@@ -292,7 +257,7 @@ class deviceDatas(Resource):
             ).order_by(DeviceData.time).all()
             # if len(ulist) == 0:
             #   abort(404)
-            return {"devicedata": getAverageUV24hours(
+            return {"data": getAverageUV24hours(
                 ulist, priorTime, currentTime)}
 
     def post(self):
@@ -425,8 +390,10 @@ class devices(Resource):
 
 class user(Resource):
     def get(self, id):
-        user = User.query.filter_by(id=id).first_or_404()
-        return {"User": userToJson(user)}, 200
+        user = User.query.filter_by(id=id).first()
+        if user is None:
+            return {"data": {}}
+        return {"data": to_json(user)}, 200
 
 
 class users(Resource):
@@ -576,29 +543,34 @@ def get_alarm():
     content = response.read()[1:-1]#remove the [] in string
     return jsonify({"data": content})
 
+
 @main.route('/v1/token', methods=['GET'])
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
     return jsonify({ 'token': token.decode('ascii') })
 
+
 @main.route('/v1/login', methods=['GET'])
 @auth.login_required
 def login():
-    id = g.user.id
     token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode('ascii'), 'id': id})
+    return jsonify({'token': token.decode('ascii'), 'status': 'ok'})
 
 
 @auth.verify_password
 def verify_password(username_or_token, password):
+    # first try to authenticate by token
     user = User.verify_auth_token(username_or_token)
     if not user:
-        user = User.query.filter_by(username=username_or_token).first()
+        # try to authenticate with username/password
+        user = User.query.filter_by(username = username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user
     return True
+    pass
+
 
 @main.route('/v1/initData', methods=['GET'])
 def initData():
