@@ -17,7 +17,7 @@ class User(db.Model):
     birthday = db.Column(db.String(100), nullable=False)
     province = db.Column(db.String(100), nullable=False)
     district = db.Column(db.String(100), nullable=False)
-    sex = db.Column(db.Boolean, nullable=False)
+    sex = db.Column(db.Integer, nullable=False)
     portrait = db.Column(db.String(100))
 
     def __init__(

@@ -186,7 +186,7 @@ class shareDatas(Resource):
                 uv=uv, pressure=pressure)
             db.session.add(new_data)
             db.session.commit()
-            return {'data': json}, 201
+            return {'status': 'ok'}, 201
 
 
 class deviceDatas(Resource):
@@ -391,9 +391,17 @@ class devices(Resource):
 class user(Resource):
     def get(self, id):
         user = User.query.filter_by(id=id).first()
+        userInfor = {}
+        userInfor['username'] = user.username
+        userInfor['email'] = user.email
+        userInfor['birthday'] = user.birthday
+        userInfor['province'] = user.province
+        userInfor['district'] = user.district
+        userInfor['sex'] = user.sex
+        print user.sex
         if user is None:
             return {"data": {}}
-        return {"data": to_json(user)}, 200
+        return {"data": userInfor}, 200
 
 
 class users(Resource):
@@ -425,9 +433,9 @@ class users(Resource):
                     "message": "Failed already has this username"}, 403
 
     def put(self):
-        if len(request.json) <= 2 or 'id' not in request.json:
+        if len(request.json) <= 2 or 'userId' not in request.json:
             abort(400)
-        id = request.json['id']
+        id = request.json['userId']
         user = User.query.filter_by(id=id).first_or_404()
         if "username" in request.json:
             user_t = User.query.filter_by(
