@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import request, g ,jsonify
+from flask import request, g ,jsonify, send_from_directory
 from flask.ext.restful import abort, Resource, reqparse
 from flask.ext.httpauth import HTTPBasicAuth
 from PIL import Image
@@ -600,9 +600,18 @@ def verify_password(username_or_token, password):
     return True
     pass
 
-UPLOAD_FOLDER = ''
+UPLOAD_FOLDER = os.path.join(os.path.split(os.path.dirname(__file__))[0], '/img')
+
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
+def get_path():
+    basedir = os.path.split(os.path.realpath(__file__))[0]
+    basedir = basedir.split('/')
+    path = ''
+    for i in range(len(basedir) - 2):
+        path += '/'
+        path = path + basedir[i + 1]
+    return path + '/img'
 
 def allowed_file(f):
     return '.' in f and f.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -611,10 +620,17 @@ def allowed_file(f):
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
+        print file.filename
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save('../img', filename)
-        return {}
+            file.save(os.path.join(get_path(), filename))
+            return jsonify({"status": "ok"})
+        else:
+            return jsonify({"status": "error"})
+
+@main.route('/v1/img/<filename>')
+def load_file(filename):
+    return send_from_directory(get_path(), filename)
 
 @main.route('/v1/initData', methods=['GET'])
 def initData():
