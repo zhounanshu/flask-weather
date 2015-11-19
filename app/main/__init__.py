@@ -6,6 +6,7 @@ from flask.ext.restful import Api
 main = Blueprint('main', __name__)
 api = Api(main)
 
+
 from .views import *
 api.add_resource(shareDatas, '/v1/sharedata')
 api.add_resource(deviceDatas, '/v1/devicedata')
@@ -18,3 +19,4 @@ api.add_resource(friends, '/v1/friend')
 api.add_resource(friend, '/v1/friend/<id>')
 api.add_resource(ObDatas, '/v1/weather')
 api.add_resource(publicDatas, '/v1/publicdatas')
+

@@ -3,6 +3,9 @@
 from flask import request, g ,jsonify
 from flask.ext.restful import abort, Resource, reqparse
 from flask.ext.httpauth import HTTPBasicAuth
+from PIL import Image
+from werkzeug import secure_filename
+import os
 
 
 import datetime,urllib2
@@ -18,7 +21,7 @@ def to_json(model):
     """ Returns a JSON representation of an SQLAlchemy-backed object. """
     json = {}
     for col in model._sa_class_manager.mapper.mapped_table.columns:
-        json[col.name] = getattr(model, col.name)
+        json[col.name] = str(getattr(model, col.name))
     return json
 
 
@@ -44,6 +47,23 @@ def pickLastPost(list):
         newList.append(lib[i])
     return newList
 
+def ObservatoryDataToJson(value):
+    list = []
+    for i in range(0, len(value)):
+        dic = {}
+        dic['area'] = value[i].area
+        dic['date'] = value[i].date.strftime("%Y-%m-%d")
+        dic['temperature'] = value[i].temperature
+        dic['weather'] = value[i].weather
+        dic['aqi'] = value[i].aqi
+        dic['humidity'] = value[i].humidity
+        dic['windspeed'] = value[i].windspeed
+        dic['winddirect'] = value[i].winddirect
+        dic['pressure'] = value[i].pressure
+        dic['sunrise'] = value[i].sunrise.time().strftime("%H:%M")
+        dic['sunset'] = value[i].sunset.time().strftime("%H:%M")
+        list.append(dic)
+    return list
 
 def getAverageUV7days(list, day1, day2):
     dayNum = (day2 - day1).days + 1
@@ -136,7 +156,8 @@ class ObDatas(Resource):
             return {'data': []}
         for i in range(0, days):
             list.append(ulist[i])
-        return {'data': to_json_list(list)}, 200
+        print list
+        return {'data': to_json_list(ulist)}, 200
 
 
 class realtimeDatas(Resource):
@@ -579,6 +600,21 @@ def verify_password(username_or_token, password):
     return True
     pass
 
+UPLOAD_FOLDER = ''
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+
+
+def allowed_file(f):
+    return '.' in f and f.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@main.route('/v1/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save('../img', filename)
+        return {}
 
 @main.route('/v1/initData', methods=['GET'])
 def initData():

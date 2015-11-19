@@ -8,3 +8,4 @@ MySQL-python
 Flask-Script
 uwsgi
 flask-cors
+Pillow
