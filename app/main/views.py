@@ -179,35 +179,24 @@ class realtimeDatas(Resource):
 class shareDatas(Resource):
 
     def post(self):
-        if not request.json:
-            abort(400)
-        else:
-            json = request.json
-            user_t = User.query.filter_by(id=json['id']).first_or_404()
-            if 'temperature' in json:
-                temperature = json['temperature']
-            else:
-                temperature = None
-            if 'humidity' in json:
-                humidity = json['humidity']
-            else:
-                humidity = None
-            if 'uv' in json:
-                uv = json['uv']
-            else:
-                uv = None
-            if 'pressure' in json:
-                pressure = json['pressure']
-            else:
-                pressure = None
-            new_data = ShareData(
-                time=json['time'], longitude=json['longitude'],
-                latitude=json['latitude'], user=user_t,
-                temperature=temperature, humidity=humidity,
-                uv=uv, pressure=pressure)
-            db.session.add(new_data)
-            db.session.commit()
-            return {'status': 'ok'}, 201
+        parser = reqparse.RequestParser()
+        parser.add_argument('temperature', type=str)
+        parser.add_argument('humidity', type=str)
+        parser.add_argument('pressure', type=str)
+        parser.add_argument('uv', type=str)
+        parser.add_argument('longitude', type=str)
+        parser.add_argument('latitude', type=str)
+        parser.add_argument('time', type=str)
+        parser.add_argument('id', type=str)
+        args = parser.parse_args(strict=True)
+        new_data = ShareData(
+            time=args['time'], longitude=args['longitude'],
+            latitude=args['latitude'], userId=args['id'],
+            temperature=args['temperature'], humidity=args['humidity'],
+            uv=args['uv'], pressure=args['pressure'])
+        db.session.add(new_data)
+        db.session.commit()
+        return {'status': 'ok'}, 201
 
 
 class deviceDatas(Resource):
@@ -282,26 +271,33 @@ class deviceDatas(Resource):
                 ulist, priorTime, currentTime)}
 
     def post(self):
-        if not request.json:
-            abort(400)
-        else:
-            json = request.json
-            user_t = User.query.filter_by(id=json['id']).first_or_404()
-            device_t = Device.query.filter_by(
-                macId=json['macId']).first_or_404()
-            new_data = DeviceData(
-                time=json['time'],
-                longitude=json['longitude'],
-                latitude=json['latitude'],
-                temperature=json['temperature'],
-                humidity=json['humidity'],
-                uv=json['uv'],
-                pressure=json['pressure'],
-                user=user_t,
-                device=device_t)
-            db.session.add(new_data)
-            db.session.commit()
-            return {'status':  'success'}, 201
+        parser = reqparse.RequestParser()
+        parser.add_argument('id', type=str)
+        parser.add_argument('macId', type=str)
+        parser.add_argument('time', type=str)
+        parser.add_argument('longitude', type=str)
+        parser.add_argument('latitude', type=str)
+        parser.add_argument('temperature', type=str)
+        parser.add_argument('humidity', type=str)
+        parser.add_argument('pressure', type=str)
+        parser.add_argument('uv', type=str)
+        args = parser.parse_args(strict=True)
+        user_t = User.query.filter_by(id=args['id']).first_or_404()
+        device_t = Device.query.filter_by(
+                macId=args['macId']).first_or_404()
+        new_data = DeviceData(
+            time=args['time'],
+            longitude=args['longitude'],
+            latitude=args['latitude'],
+            temperature=args['temperature'],
+            humidity=args['humidity'],
+            uv=args['uv'],
+            pressure=args['pressure'],
+            user=user_t,
+            device=device_t)
+        db.session.add(new_data)
+        db.session.commit()
+        return {'status':  'success'}, 201
 
 
 class friend(Resource):
@@ -326,17 +322,21 @@ class friend(Resource):
 class friends(Resource):
 
     def post(self):
-        if not request.json or 'username' not in request.json or 'friendname' not in request.json:
-            abort(400)
-        username1 = request.json['username']
-        username2 = request.json['friendname']
-        user1_id = User.query.filter_by(username=username1).first_or_404().id
-        user2_id = User.query.filter_by(username=username2).first_or_404().id
+        parser = reqparse.RequestParser()
+        parser.add_argument('username', type=str)
+        parser.add_argument('friendname', type=str)
+        args = parser.parse_args(strict=True)
+        user1 = User.query.filter_by(username=args['username']).first()
+        if user1 is None:
+            return {"message": "no user"}, 404
+        user2 = User.query.filter_by(username=args['friendname']).first()
+        if user2 is None:
+            return {"message": "no friend user"}, 404
         relation = Friendships.query.filter_by(
-            user1_id=user1_id, user2_id=user2_id).first()
+            user1_id=user1.id, user2_id=user2.id).first()
         if relation is None:
-            newFriendship1 = Friendships(user1_id, user2_id)
-            newFriendship2 = Friendships(user2_id, user1_id)
+            newFriendship1 = Friendships(user1.id, user2.id)
+            newFriendship2 = Friendships(user2.id, user1.id)
             db.session.add(newFriendship1)
             db.session.add(newFriendship2)
             db.session.commit()
@@ -382,28 +382,28 @@ class device(Resource):
 class devices(Resource):
 
     def post(self):
-        if not request.json or 'macId' not in request.json or 'id' not in request.json:
-            abort(400)
-        id = request.json['id']
-        macId = request.json['macId']
-        user = User.query.filter_by(id=id).first_or_404()
-        device = Device.query.filter_by(macId=macId).first()
+        parser = reqparse.RequestParser()
+        parser.add_argument('id', type=str)
+        parser.add_argument('macId', type=str)
+        args = parser.parse_args(strict=True)
+        user = User.query.filter_by(id=args['id']).first_or_404()
+        device = Device.query.filter_by(macId=args['macId']).first()
         if device is not None:
             return {
                 "status": "failed", "message": "already add this device"}, 403
         else:
-            newDevice = Device(macId, user)
+            newDevice = Device(args['macId'], user)
             db.session.add(newDevice)
             db.session.commit()
             return {"status": "ok"}, 201
 
     def delete(self):
-        if not request.json or 'macId' not in request.json or 'id' not in request.json:
-            abort(400)
-        id = request.json['id']
-        macId = request.json['macId']
-        user = User.query.filter_by(id=id).first_or_404()
-        device = Device.query.filter_by(macId=macId).first_or_404()
+        parser = reqparse.RequestParser()
+        parser.add_argument('id', type=str)
+        parser.add_argument('macId', type=str)
+        args = parse_args(strict=True)
+        user = User.query.filter_by(id=args['id']).first_or_404()
+        device = Device.query.filter_by(macId=args['macId']).first_or_404()
         db.session.delete(device)
         db.session.commit()
         return {"status": "ok"}, 200
@@ -430,21 +430,19 @@ class users(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('username', type=str)
-        return {"status": "ok"}
-        parser.add_argument('username', type=str)
-        username = request.json['username']
-        password = request.json['password']
-        birthday = request.json['birthday']
-        name = request.json['name']
-        email = request.json['email']
-        province = request.json['province']
-        district = request.json['district']
-        sex = request.json['sex']
-        people = User.query.filter_by(username=username).first()
+        parser.add_argument('password', type=str)
+        parser.add_argument('birthday', type=str)
+        parser.add_argument('name')
+        parser.add_argument('email', type=str)
+        parser.add_argument('province')
+        parser.add_argument('sex', type=str)
+        parser.add_argument('district')
+        args = parser.parse_args(strict=True)
+        people = User.query.filter_by(username=args['username']).first()
         if people is None:
             newUser = User(
-                username, password, email, name,
-                birthday, province, district, sex)
+                args['username'], args['password'], args['email'], args['name'],
+                args['birthday'], args['province'], args['district'], args['sex'])
             db.session.add(newUser)
             db.session.commit()
             userId = newUser.id

@@ -16,7 +16,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     birthday = db.Column(db.String(100), nullable=False)
     province = db.Column(db.String(100), nullable=False)
-    district = db.Column(db.String(100), nullable=False)
+    district = db.Column(db.String(256), nullable=False)
     sex = db.Column(db.Integer, nullable=False)
     portrait = db.Column(db.String(100))
 
@@ -143,7 +143,7 @@ class ShareData(db.Model):
         'User', backref=db.backref('sharedatas', lazy='dynamic'))
 
     def __init__(
-            self, time, longitude, latitude, user,
+            self, time, longitude, latitude, userId,
             temperature=None, humidity=None,
             uv=None, pressure=None):
         self.time = time
@@ -153,7 +153,7 @@ class ShareData(db.Model):
         self.humidity = humidity
         self.uv = uv
         self.pressure = pressure
-        self.user = user
+        self.userId = userId
 
     def __repr__(self):
         return '<ShareData %r>' % self.id
