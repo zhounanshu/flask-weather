@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import request, g ,jsonify, send_from_directory
+from flask import request, g ,jsonify, send_from_directory, send_file
 from flask.ext.restful import abort, Resource, reqparse
 from flask.ext.httpauth import HTTPBasicAuth
 from PIL import Image
@@ -428,8 +428,10 @@ class user(Resource):
 class users(Resource):
 
     def post(self):
-        if not request.json:
-            abort(400)
+        parser = reqparse.RequestParser()
+        parser.add_argument('username', type=str)
+        return {"status": "ok"}
+        parser.add_argument('username', type=str)
         username = request.json['username']
         password = request.json['password']
         birthday = request.json['birthday']
@@ -600,7 +602,10 @@ def verify_password(username_or_token, password):
     return True
     pass
 
-UPLOAD_FOLDER = os.path.join(os.path.split(os.path.dirname(__file__))[0], '/img')
+def compress_img(img, w, h):
+    img.thumbnail((w, h))
+    img.save('wld.png', 'PNG')
+    return img
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
@@ -620,7 +625,6 @@ def allowed_file(f):
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
-        print file.filename
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(get_path(), filename))
@@ -630,7 +634,10 @@ def upload_file():
 
 @main.route('/v1/img/<filename>')
 def load_file(filename):
+    # img = Image.
+    img = compress_img(img, 128,128)
     return send_from_directory(get_path(), filename)
+    # return send_file(os.path.join(get_path(), filename))
 
 @main.route('/v1/initData', methods=['GET'])
 def initData():
